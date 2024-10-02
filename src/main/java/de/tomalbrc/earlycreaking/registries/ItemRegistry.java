@@ -1,5 +1,6 @@
 package de.tomalbrc.earlycreaking.registries;
 
+import de.tomalbrc.earlycreaking.EarlyCreaking;
 import de.tomalbrc.earlycreaking.Util;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
@@ -18,8 +19,8 @@ public class ItemRegistry {
 
     public static void registerItems() {
         CreativeModeTab ITEM_GROUP = new CreativeModeTab.Builder(null, -1)
-                .title(Component.literal("Early Creaking").withStyle(ChatFormatting.AQUA))
-                .icon(Items.LAPIS_BLOCK::getDefaultInstance)
+                .title(Component.literal("Early Creaking").withStyle(ChatFormatting.DARK_PURPLE))
+                .icon(() -> BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(EarlyCreaking.MOD_ID, "creaking_heart")).getDefaultInstance())
                 .displayItems((parameters, output) -> CUSTOM_ITEMS.forEach((key, value) -> output.accept(value)))
                 .build();
 

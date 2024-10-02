@@ -7,7 +7,7 @@
   "authors": [],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/earlycreaking/icon.png",
+  "icon": "creaking-logo-128.png",
   "environment": "server",
   "entrypoints": {
     "main": [
@@ -20,6 +20,8 @@
   "depends": {
     "fabricloader": ">=${loader_version}",
     "minecraft": ">=${minecraft_version}",
+    "polymer-virtual-entity": "*",
+    "polymer-resource-pack": "*",
     "polymer-core": "*",
     "polymer-blocks": "*"
   }

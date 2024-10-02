@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
@@ -46,8 +47,11 @@ public class Creaking extends Monster implements AnimatedEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return Animal.createMobAttributes()
                 .add(Attributes.FOLLOW_RANGE, 32.0)
+                .add(Attributes.ATTACK_DAMAGE, 10.0)
                 .add(Attributes.MAX_HEALTH, 100.0)
-                .add(Attributes.MOVEMENT_SPEED, 0.3);
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1000.0)
+                .add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE, 1000.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.4);
     }
 
     @Override
@@ -67,13 +71,18 @@ public class Creaking extends Monster implements AnimatedEntity {
     }
 
     @Override
+    public float getShadowRadius() {
+        return 0;
+    }
+
+    @Override
     public boolean checkSpawnRules(LevelAccessor levelAccessor, MobSpawnType mobSpawnType) {
         return true;
     }
 
     @Override
     public boolean isInvulnerableTo(DamageSource damageSource) {
-        return damageSource.is(DamageTypes.GENERIC_KILL);
+        return !damageSource.is(DamageTypes.GENERIC_KILL);
     }
 
     @Override
@@ -97,7 +106,6 @@ public class Creaking extends Monster implements AnimatedEntity {
     @Override
     public void tick() {
         super.tick();
-
         if (this.tickCount % 2 == 0) {
             AnimationHelper.updateWalkAnimation(this, this.holder);
             AnimationHelper.updateHurtColor(this, this.holder);
@@ -164,16 +172,19 @@ public class Creaking extends Monster implements AnimatedEntity {
                 return false;
             } else {
                 double distancedToSqr = this.target.distanceToSqr(this.creaking);
-                return distancedToSqr > 256.0 ? false : this.target.hasLineOfSight(this.creaking);
+                return !(distancedToSqr > 1024) && (distancedToSqr < 1 || !isInFOV());
             }
+        }
+
+        private static final double fov = 90 * Mth.DEG_TO_RAD;
+        private boolean isInFOV() {
+            Vec3 directionFacing = this.target.getViewVector(1).normalize();
+            Vec3 directionToTarget = this.target.position().subtract(this.creaking.position()).normalize();
+            return Math.acos(directionFacing.dot(directionToTarget)) <= fov;
         }
 
         public void start() {
             this.creaking.getNavigation().stop();
-        }
-
-        public void tick() {
-            //this.creaking.getLookControl().setLookAt(this.target.getX(), this.target.getEyeY(), this.target.getZ());
         }
     }
 }

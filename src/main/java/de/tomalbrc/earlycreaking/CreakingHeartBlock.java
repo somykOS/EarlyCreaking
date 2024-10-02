@@ -8,6 +8,7 @@ import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -47,6 +48,19 @@ public class CreakingHeartBlock extends RotatedPillarBlock implements EntityBloc
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(BlockStateProperties.LIT);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
+        var bs = super.getStateForPlacement(blockPlaceContext);
+        BlockState state = blockPlaceContext.getLevel().getBlockState(blockPlaceContext.getClickedPos().relative(bs.getValue(AXIS), 1));
+        BlockState state2 = blockPlaceContext.getLevel().getBlockState(blockPlaceContext.getClickedPos().relative(bs.getValue(AXIS), -1));
+
+        if (state2 == state && state.hasProperty(AXIS) && state.getValue(AXIS) == bs.getValue(AXIS)) {
+            bs = bs.setValue(BlockStateProperties.LIT, true);
+        }
+
+        return bs;
     }
 
     @Override

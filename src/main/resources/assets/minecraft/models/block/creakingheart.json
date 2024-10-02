@@ -1,5 +1,6 @@
 {
 	"texture_size": [64, 64],
+	"parent": "minecraft:block/block",
 	"textures": {
 		"0": "minecraft:block/creakingheart",
 		"particle": "minecraft:block/creakingheart"
