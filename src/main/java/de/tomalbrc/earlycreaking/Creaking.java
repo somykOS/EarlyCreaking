@@ -68,6 +68,8 @@ public class Creaking extends Monster implements AnimatedEntity {
 
         this.holder = new LivingEntityHolder<>(this, MODEL);
         EntityAttachment.ofTicking(this.holder, this);
+
+        setPersistenceRequired();
     }
 
     @Override
