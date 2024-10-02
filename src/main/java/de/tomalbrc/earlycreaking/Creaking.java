@@ -6,20 +6,37 @@ import de.tomalbrc.bil.core.holder.entity.living.LivingEntityHolder;
 import de.tomalbrc.bil.core.model.Model;
 import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.EnumSet;
 
 public class Creaking extends Monster implements AnimatedEntity {
     public static final ResourceLocation ID = Util.id("creaking");
@@ -28,8 +45,9 @@ public class Creaking extends Monster implements AnimatedEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Animal.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 6.0)
-                .add(Attributes.MOVEMENT_SPEED, 0.25);
+                .add(Attributes.FOLLOW_RANGE, 32.0)
+                .add(Attributes.MAX_HEALTH, 100.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.3);
     }
 
     @Override
@@ -49,8 +67,31 @@ public class Creaking extends Monster implements AnimatedEntity {
     }
 
     @Override
+    public boolean checkSpawnRules(LevelAccessor levelAccessor, MobSpawnType mobSpawnType) {
+        return true;
+    }
+
+    @Override
+    public boolean isInvulnerableTo(DamageSource damageSource) {
+        return damageSource.is(DamageTypes.GENERIC_KILL);
+    }
+
+    @Override
+    public boolean canCollideWith(Entity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(11, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(1, new CreakingFreezeWhenLookedAt(this));
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0, false));
+
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
     }
 
     @Override
@@ -61,6 +102,14 @@ public class Creaking extends Monster implements AnimatedEntity {
             AnimationHelper.updateWalkAnimation(this, this.holder);
             AnimationHelper.updateHurtColor(this, this.holder);
         }
+    }
+
+    @Override
+    public void remove(RemovalReason removalReason) {
+        if (this.level() instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.POOF, getX(), getY()+1, getZ(),80,0.2, 0.8, 0.2, 0);
+        }
+        super.remove(removalReason);
     }
 
     @Override
@@ -97,5 +146,34 @@ public class Creaking extends Monster implements AnimatedEntity {
     @Override
     public boolean isPushedByFluid() {
         return false;
+    }
+
+    private static class CreakingFreezeWhenLookedAt extends Goal {
+        private final Creaking creaking;
+        @Nullable
+        private LivingEntity target;
+
+        public CreakingFreezeWhenLookedAt(Creaking creaking) {
+            this.creaking = creaking;
+            this.setFlags(EnumSet.of(Flag.JUMP, Flag.MOVE));
+        }
+
+        public boolean canUse() {
+            this.target = this.creaking.getTarget();
+            if (!(this.target instanceof Player)) {
+                return false;
+            } else {
+                double distancedToSqr = this.target.distanceToSqr(this.creaking);
+                return distancedToSqr > 256.0 ? false : this.target.hasLineOfSight(this.creaking);
+            }
+        }
+
+        public void start() {
+            this.creaking.getNavigation().stop();
+        }
+
+        public void tick() {
+            //this.creaking.getLookControl().setLookAt(this.target.getX(), this.target.getEyeY(), this.target.getZ());
+        }
     }
 }

@@ -14,12 +14,12 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class MobRegistry {
-    public static final EntityType<Creaking> PENGUIN = register(
+    public static final EntityType<Creaking> CREAKING = register(
             Creaking.ID,
             FabricEntityTypeBuilder.createMob()
                     .entityFactory(Creaking::new)
                     .spawnGroup(MobCategory.CREATURE)
-                    .dimensions(EntityDimensions.scalable(0.6f, 0.95f))
+                    .dimensions(EntityDimensions.scalable(0.6f, 3.f))
                     .defaultAttributes(Creaking::createAttributes)
                     .spawnRestriction(SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mob::checkMobSpawnRules)
     );
@@ -31,7 +31,7 @@ public class MobRegistry {
     }
 
     public static void registerMobs() {
-        addSpawnEgg(PENGUIN, Items.SNOW_GOLEM_SPAWN_EGG);
+        addSpawnEgg(CREAKING, Items.SNOW_GOLEM_SPAWN_EGG);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

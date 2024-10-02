@@ -7,11 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class Util {
     public static ResourceLocation id(String path) {
-        return ResourceLocation.tryBuild(EarlyCreaking.MOD_ID, path);
-    }
-
-    public static Model loadModel(ResourceLocation resourceLocation) {
-        return AjModelLoader.load(resourceLocation);
+        return ResourceLocation.fromNamespaceAndPath(EarlyCreaking.MOD_ID, path);
     }
 
     public static Model loadBbModel(ResourceLocation resourceLocation) {

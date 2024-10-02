@@ -17,8 +17,6 @@ public class ItemRegistry {
     public static final Object2ObjectLinkedOpenHashMap<ResourceLocation, Item> CUSTOM_ITEMS = new Object2ObjectLinkedOpenHashMap<>();
 
     public static void registerItems() {
-
-
         CreativeModeTab ITEM_GROUP = new CreativeModeTab.Builder(null, -1)
                 .title(Component.literal("Early Creaking").withStyle(ChatFormatting.AQUA))
                 .icon(Items.LAPIS_BLOCK::getDefaultInstance)
