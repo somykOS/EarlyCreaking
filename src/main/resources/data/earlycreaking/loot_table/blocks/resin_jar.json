@@ -7,7 +7,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "earlycreaking:creaking_heart"
+          "name": "earlycreaking:resin_jar"
         }
       ],
       "conditions": [

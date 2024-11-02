@@ -2,16 +2,14 @@ package de.tomalbrc.earlycreaking;
 
 import de.tomalbrc.earlycreaking.registries.BlockRegistry;
 import de.tomalbrc.earlycreaking.registries.MobRegistry;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.SpawnUtil;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.TickingBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.LargeEntitySpawnHelper;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.property.Properties;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public class CreakingHeartBlockEntity extends BlockEntity {
     private Creaking entity;
@@ -22,18 +20,16 @@ public class CreakingHeartBlockEntity extends BlockEntity {
     }
 
     public void spawnMob() {
-        if (this.level != null && this.entity == null) {
-            var spawnedMob = SpawnUtil.trySpawnMob(MobRegistry.CREAKING, MobSpawnType.TRIGGERED, (ServerLevel) level, this.getBlockPos(), 20, 5, 6, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER);
-            spawnedMob.ifPresent(creaking -> {
-                this.entity = creaking;
-            });
+        if (this.world != null && this.entity == null) {
+            var spawnedMob = LargeEntitySpawnHelper.trySpawnAt(MobRegistry.CREAKING, SpawnReason.TRIGGERED, (ServerWorld) world, this.getPos(), 20, 5, 6, LargeEntitySpawnHelper.Requirements.WARDEN);
+            spawnedMob.ifPresent(creaking -> this.entity = creaking);
         }
     }
 
     @Override
-    public void setRemoved() {
+    public void markRemoved() {
         this.removeMob();
-        super.setRemoved();
+        super.markRemoved();
     }
 
     public void removeMob() {
@@ -43,9 +39,13 @@ public class CreakingHeartBlockEntity extends BlockEntity {
         }
     }
 
-    public static <T extends BlockEntity> void tick(Level level, BlockPos blockPos, BlockState blockState, T t) {
+    public static boolean isWorldNaturalAndNight(World world) {
+        return world.getDimension().natural() && world.isNight();
+    }
+
+    public static <T extends BlockEntity> void tick(World level, BlockPos blockPos, BlockState blockState, T t) {
         if (t instanceof CreakingHeartBlockEntity creakingHeartBlockEntity) {
-            if (blockState.getValue(BlockStateProperties.LIT)) creakingHeartBlockEntity.spawnMob();
+            if (blockState.get(Properties.LIT) && isWorldNaturalAndNight(level)) creakingHeartBlockEntity.spawnMob();
             else if (creakingHeartBlockEntity.entity != null && !creakingHeartBlockEntity.entity.isRemoved()) creakingHeartBlockEntity.removeMob();
         }
     }

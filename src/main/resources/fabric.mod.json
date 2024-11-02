@@ -4,14 +4,23 @@
   "version": "${version}",
   "name": "EarlyCreaking",
   "description": "",
-  "authors": [],
-  "contact": {},
+  "authors": [
+    "tomalbrc",
+    "somyk"
+  ],
+  "contact": {
+    "sources": "https://github.com/tomalbrc/EarlyCreaking",
+    "fork": "https://github.com/somykOS/EarlyCreaking"
+  },
   "license": "MIT",
   "icon": "creaking-logo-128.png",
   "environment": "server",
   "entrypoints": {
     "main": [
       "de.tomalbrc.earlycreaking.EarlyCreaking"
+    ],
+    "fabric-datagen": [
+      "de.tomalbrc.earlycreaking.EarlyCreakingDataGenerator"
     ]
   },
   "mixins": [

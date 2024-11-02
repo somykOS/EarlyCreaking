@@ -5,95 +5,95 @@ import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
 import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
 import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.RotatedPillarBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.PillarBlock;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.Properties;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 
-public class CreakingHeartBlock extends RotatedPillarBlock implements EntityBlock, PolymerTexturedBlock {
+public class CreakingHeartBlock extends PillarBlock implements BlockEntityProvider, PolymerTexturedBlock {
     private final Map<Direction.Axis, BlockState> stateMap;
     private final Map<Direction.Axis, BlockState> stateMapLit;
 
-    public CreakingHeartBlock(Properties properties) {
+    public CreakingHeartBlock(Settings properties) {
         super(properties);
 
         this.stateMap = new IdentityHashMap<>();
         this.stateMapLit = new IdentityHashMap<>();
-        this.stateMap.put(Direction.Axis.X, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(ResourceLocation.fromNamespaceAndPath("minecraft", "block/creakingheart"), 90, 90)));
-        this.stateMap.put(Direction.Axis.Y, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(ResourceLocation.fromNamespaceAndPath("minecraft", "block/creakingheart"), 0, 0)));
-        this.stateMap.put(Direction.Axis.Z, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(ResourceLocation.fromNamespaceAndPath("minecraft", "block/creakingheart"), 90, 0)));
+        this.stateMap.put(Direction.Axis.X, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(Identifier.of("minecraft", "block/creakingheart"), 90, 90)));
+        this.stateMap.put(Direction.Axis.Y, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(Identifier.of("minecraft", "block/creakingheart"), 0, 0)));
+        this.stateMap.put(Direction.Axis.Z, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(Identifier.of("minecraft", "block/creakingheart"), 90, 0)));
 
-        this.stateMapLit.put(Direction.Axis.Y, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(ResourceLocation.fromNamespaceAndPath("minecraft", "block/creakingheart_lit"), 0, 0)));
-        this.stateMapLit.put(Direction.Axis.Z, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(ResourceLocation.fromNamespaceAndPath("minecraft", "block/creakingheart_lit"), 90, 0)));
-        this.stateMapLit.put(Direction.Axis.X, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(ResourceLocation.fromNamespaceAndPath("minecraft", "block/creakingheart_lit"), 90, 90)));
+        this.stateMapLit.put(Direction.Axis.Y, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(Identifier.of("minecraft", "block/creakingheart_lit"), 0, 0)));
+        this.stateMapLit.put(Direction.Axis.Z, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(Identifier.of("minecraft", "block/creakingheart_lit"), 90, 0)));
+        this.stateMapLit.put(Direction.Axis.X, PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, PolymerBlockModel.of(Identifier.of("minecraft", "block/creakingheart_lit"), 90, 90)));
 
-        this.registerDefaultState(this.defaultBlockState().setValue(BlockStateProperties.LIT, false));
+        this.setDefaultState(this.getDefaultState().with(Properties.LIT, false));
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-        builder.add(BlockStateProperties.LIT);
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        super.appendProperties(builder);
+        builder.add(Properties.LIT);
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
-        var bs = super.getStateForPlacement(blockPlaceContext);
-        BlockState state = blockPlaceContext.getLevel().getBlockState(blockPlaceContext.getClickedPos().relative(bs.getValue(AXIS), 1));
-        BlockState state2 = blockPlaceContext.getLevel().getBlockState(blockPlaceContext.getClickedPos().relative(bs.getValue(AXIS), -1));
+    public BlockState getPlacementState(ItemPlacementContext blockPlaceContext) {
+        var bs = super.getPlacementState(blockPlaceContext);
+        BlockState state = blockPlaceContext.getWorld().getBlockState(blockPlaceContext.getBlockPos().offset(bs.get(AXIS), 1));
+        BlockState state2 = blockPlaceContext.getWorld().getBlockState(blockPlaceContext.getBlockPos().offset(bs.get(AXIS), -1));
 
-        if (state2 == state && state.hasProperty(AXIS) && state.getValue(AXIS) == bs.getValue(AXIS)) {
-            bs = bs.setValue(BlockStateProperties.LIT, true);
+        if (state2 == state && state.contains(AXIS) && state.get(AXIS) == bs.get(AXIS)) {
+            bs = bs.with(Properties.LIT, true);
         }
 
         return bs;
     }
 
     @Override
-    public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos blockPos2, boolean bl) {
-        boolean wasLit = blockState.getValue(BlockStateProperties.LIT);
-        BlockState state = level.getBlockState(blockPos.relative(blockState.getValue(AXIS), 1));
-        BlockState state2 = level.getBlockState(blockPos.relative(blockState.getValue(AXIS), -1));
+    public void neighborUpdate(BlockState blockState, World level, BlockPos blockPos, Block block, BlockPos blockPos2, boolean bl) {
+        boolean wasLit = blockState.get(Properties.LIT);
+        BlockState state = level.getBlockState(blockPos.offset(blockState.get(AXIS), 1));
+        BlockState state2 = level.getBlockState(blockPos.offset(blockState.get(AXIS), -1));
 
-        if (!wasLit && state2 == state && state.hasProperty(AXIS) && state.getValue(AXIS) == blockState.getValue(AXIS)) {
-            level.setBlock(blockPos, blockState.setValue(BlockStateProperties.LIT, true), 2);
+        if (!wasLit && state2 == state && state.contains(AXIS) && state.get(AXIS) == blockState.get(AXIS)) {
+            level.setBlockState(blockPos, blockState.with(Properties.LIT, true), 2);
         } else if (wasLit) {
-            level.setBlock(blockPos, blockState.setValue(BlockStateProperties.LIT, false), 2);
+            level.setBlockState(blockPos, blockState.with(Properties.LIT, false), 2);
         }
 
-        super.neighborChanged(blockState, level, blockPos, block, blockPos2, bl);
+        super.neighborUpdate(blockState, level, blockPos, block, blockPos2, bl);
     }
 
     @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
-        return BlockRegistry.CREAKING_HEART_BLOCK_ENTITY.create(blockPos, blockState);
+    public BlockEntity createBlockEntity(BlockPos blockPos, BlockState blockState) {
+        return BlockRegistry.CREAKING_HEART_BLOCK_ENTITY.instantiate(blockPos, blockState);
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World level, BlockState state, BlockEntityType<T> type) {
         return type == BlockRegistry.CREAKING_HEART_BLOCK_ENTITY ? CreakingHeartBlockEntity::tick : null;
     }
 
     @Override
     public BlockState getPolymerBlockState(BlockState blockState) {
-        return blockState.getValue(BlockStateProperties.LIT) ?
-                this.stateMapLit.get(blockState.getValue(AXIS)) :
-                this.stateMap.get(blockState.getValue(AXIS));
+        return blockState.get(Properties.LIT) ?
+                this.stateMapLit.get(blockState.get(AXIS)) :
+                this.stateMap.get(blockState.get(AXIS));
     }
 }

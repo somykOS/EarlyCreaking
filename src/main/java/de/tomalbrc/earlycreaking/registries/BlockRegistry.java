@@ -1,50 +1,51 @@
 package de.tomalbrc.earlycreaking.registries;
 
-import de.tomalbrc.earlycreaking.CreakingHeartBlock;
-import de.tomalbrc.earlycreaking.CreakingHeartBlockEntity;
-import de.tomalbrc.earlycreaking.TexturedPolymerBlockItem;
-import de.tomalbrc.earlycreaking.Util;
+import de.tomalbrc.earlycreaking.*;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
-import eu.pb4.polymer.core.api.item.PolymerBlockItem;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
 
 public class BlockRegistry {
     public static final Block CREAKING_HEART = registerBlock(
-            Util.id("creaking_heart"),
-            new CreakingHeartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STRIPPED_BIRCH_LOG).pushReaction(PushReaction.BLOCK)),
-            ResourceLocation.fromNamespaceAndPath("minecraft", "block/creakingheart_lit")
+            Identifier.of("minecraft","creaking_heart"),
+            new CreakingHeartBlock(AbstractBlock.Settings.copy(Blocks.STRIPPED_BIRCH_LOG).pistonBehavior(PistonBehavior.BLOCK))
     );
 
-    public static final BlockEntityType<CreakingHeartBlockEntity> CREAKING_HEART_BLOCK_ENTITY = registerBlockEntity(Util.id("creaking_heart"), BlockEntityType.Builder.of(CreakingHeartBlockEntity::new, CREAKING_HEART));
+    public static final BlockItem CREAKING_HEART_ITEM = registerItem(Identifier.of("minecraft","creaking_heart"), new TexturedPolymerBlockItem(CREAKING_HEART, new Item.Settings(), Identifier.of("minecraft", "block/creakingheart_lit")));
+
+    public static final Block RESIN_JAR = registerBlock(
+            Util.id("resin_jar"),
+            new ResinJarBlock(AbstractBlock.Settings.copy(Blocks.LANTERN).luminance((state) -> 5).breakInstantly(), Util.id("block/resin_jar"))
+            );
+
+    public static final BlockItem RESIN_JAR_ITEM = registerItem(Util.id("resin_jar"), new TexturedPolymerBlockItem(RESIN_JAR, new Item.Settings(), Util.id("block/resin_jar")));
+
+    public static final BlockEntityType<CreakingHeartBlockEntity> CREAKING_HEART_BLOCK_ENTITY = registerBlockEntity(Util.id("creaking_heart"), BlockEntityType.Builder.create(CreakingHeartBlockEntity::new, CREAKING_HEART));
 
     public static void registerBlocks() {
 
     }
 
-    public static Block registerBlock(ResourceLocation identifier, Block block, ResourceLocation itemModel) {
-        BlockItem blockItem = new TexturedPolymerBlockItem(block, new Item.Properties(), itemModel);
-        registerItem(identifier, blockItem);
-        return Registry.register(BuiltInRegistries.BLOCK, identifier, block);
+    public static Block registerBlock(Identifier identifier, Block block) {
+        return Registry.register(Registries.BLOCK, identifier, block);
     }
 
-    public static <T extends BlockEntity> BlockEntityType<T> registerBlockEntity(ResourceLocation identifier, BlockEntityType.Builder<T> builder) {
-        var type = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, identifier, builder.build(null));
+    public static <T extends BlockEntity> BlockEntityType<T> registerBlockEntity(Identifier identifier, BlockEntityType.Builder<T> builder) {
+        var type = Registry.register(Registries.BLOCK_ENTITY_TYPE, identifier, builder.build(null));
         PolymerBlockUtils.registerBlockEntity(type);
         return type;
     }
 
-    static public void registerItem(ResourceLocation identifier, Item item) {
-        ItemRegistry.register(identifier, item);
+    public static BlockItem registerItem(Identifier identifier, BlockItem item){
+        return ItemRegistry.register(identifier, item);
     }
 }

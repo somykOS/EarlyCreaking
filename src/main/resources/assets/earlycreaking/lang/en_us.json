@@ -1,5 +1,11 @@
 {
-  "block.earlycreaking.creaking_heart": "Creaking Heart",
-  "item.earlycreaking.creaking_spawn_egg": "Creaking Spawn Egg",
-  "entity.earlycreaking.creaking": "Creaking"
+  "block.minecraft.creaking_heart": "Creaking Heart",
+  "item.minecraft.creaking_spawn_egg": "Creaking Spawn Egg",
+  "entity.minecraft.creaking": "Creaking",
+
+  "item.minecraft.resin_clump": "Resin Clump",
+  "item.minecraft.resin_brick": "Resin Brick",
+
+  "block.earlycreaking.resin_jar": "Resin Jar",
+  "item.earlycreaking.wooden_heart": "Wooden Heart"
 }
