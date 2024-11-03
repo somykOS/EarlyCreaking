@@ -1,18 +1,17 @@
 package de.tomalbrc.earlycreaking;
 
-import de.tomalbrc.earlycreaking.registries.BlockRegistry;
-import eu.pb4.factorytools.api.block.BarrierBasedWaterloggable;
 import eu.pb4.factorytools.api.block.FactoryBlock;
 import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
 import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
+import eu.pb4.polymer.blocks.api.BlockModelType;
+import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
+import eu.pb4.polymer.blocks.api.PolymerTexturedBlock;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LanternBlock;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
@@ -23,11 +22,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
-public class ResinJarBlock extends LanternBlock implements FactoryBlock, BarrierBasedWaterloggable {
+public class ResinJarBlock extends LanternBlock implements FactoryBlock, PolymerTexturedBlock {
     private final ItemStack model;
 
     public ResinJarBlock(Settings settings, Identifier modelPath) {
@@ -41,8 +39,13 @@ public class ResinJarBlock extends LanternBlock implements FactoryBlock, Barrier
     }
 
     @Override
+    public BlockState getPolymerBlockState(BlockState state) {
+        return PolymerBlockResourceUtils.requestEmpty(BlockModelType.PLANT_BLOCK);
+    }
+
+    @Override
     public BlockState getPolymerBreakEventBlockState(BlockState state, ServerPlayerEntity player) {
-        return Blocks.LANTERN.getDefaultState();
+        return Blocks.GLASS.getDefaultState();
     }
 
     private static final class Model extends BlockModel {
@@ -72,9 +75,4 @@ public class ResinJarBlock extends LanternBlock implements FactoryBlock, Barrier
         return null;
     }
 
-    @Override
-    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-        if(!player.isInCreativeMode()) world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), BlockRegistry.RESIN_JAR_ITEM.getDefaultStack()));
-        return super.onBreak(world, pos, state, player);
-    }
 }
